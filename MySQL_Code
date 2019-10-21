@@ -1,0 +1,490 @@
+use sam_system; # This is my database
+SELECT * FROM data_hr limit 5;
+
+# Data Analysis
+describe data_hr; # Returns list of columns with datatypes
+
+# Get Table Shape
+select count(EmployeeID) from data_hr;          # Returns Number of Rows
+
+select count(*) from information_schema.columns # Contains tables with respective columns
+where table_name = 'data_hr';                   # Return Number of Columns
+
+
+
+
+# *********************************************** Data Analyis (Profiling) ***********************************************************
+
+select department,count(*) as Count from data_hr group by department;
+/* Output :
+Sales	445
+Research & Development	961     *** Highest
+Human Resources	63
+*/
+
+select jobrole,count(*) as Count from data_hr group by jobrole order by count(*) desc;
+/* Output :
+Null	3015
+Sales Executive	326                *** Highest
+Research Scientist	292            
+Laboratory Technician	259
+Manufacturing Director	145
+Healthcare Representative	131
+Manager	102
+Sales Representative	82
+Research Director	80
+Human Resources	52
+*/
+
+select attrition,count(*) as Count from data_hr group by attrition;
+/* Output : 
+Yes	237
+No	1232              only 19% have attrition behavior
+*/
+
+select gender,count(*) as Count from data_hr group by gender;
+/* Output : 
+Female	588
+Male	881   *** Highest Male
+*/
+
+alter table data_hr add column age_group varchar(7);                       # Add age_group column
+update data_hr set age_group = if(age<=20,'<20',if(age>40,'40+','20-40')); # Assign Values
+select age_group,count(*) as Count from data_hr group by age_group;
+/* Output : 
+40+	465
+20-40	3991   *** Highest Mid age
+<20	28
+*/
+
+select maritalstatus,count(*) as Count from data_hr group by maritalstatus ;
+/* Output : 
+Single	470
+Married	672                 *** Highest   Married People
+Divorced	327
+Null	3015
+*/
+
+select education,count(*) as Count from data_hr group by education order by count(*) desc;
+/* Output : 
+Null	3015
+Bachelor	572             *** Highest  Mostly graduates
+Master	398
+College	282
+Below College	169
+Doctor	48
+*/
+
+select educationfield,count(*) as Count from data_hr group by educationfield;
+/* Output : 
+Life Sciences	605               *** Highest
+Other	82
+Medical	464
+Marketing	159
+Technical Degree	132
+Human Resources	27
+Null 3015
+*/
+
+select businesstravel,count(*) as Count from data_hr group by businesstravel;
+/* Output : 
+Travel_Rarely	1042                 *** Highest Most employee dont travel
+Travel_Frequently	277
+Non-Travel	150
+Null 3015
+*/
+
+select JobInvolvement,count(*) as Count from data_hr group by JobInvolvement;
+/* Output : 
+High	867                 *** Highest Job intensive 
+Medium	375
+Very High	144
+Low	83
+Null 3015
+*/
+
+select JobLevel,count(*) as Count from data_hr group by JobLevel;
+/* Output : 
+2	534               *** Highest
+1	542
+3	218
+4	106
+5	69
+Null 3015
+*/
+
+select JobSatisfaction,count(*) as Count from data_hr group by JobSatisfaction;
+/* Output : 
+Very High	459                      *** Highest  High satisfaction, as high involvement
+Medium	280
+High	441
+Low	289
+Null 3015
+*/
+
+select min(Hourlyrate) as Minimum,max(Hourlyrate) as Maximum,avg(Hourlyrate) as Average from data_hr;
+/* Output : 
+Min Max Mean
+30	100	65.8843                # Non-Skewed
+*/
+
+select min(Income) as Minimum,max(Income) as Maximum,avg(Income) as Average from data_hr;
+/* Output : 
+Min     Max     Mean
+1009	19999	6505.7216     # Negatively Skewed, Mostly Low Income
+*/
+
+select min(Salaryhike) as Minimum,max(Salaryhike) as Maximum,avg(Salaryhike) as Average from data_hr;
+/* Output : 
+Min Max Mean
+11	25	15.2110               # Negatively skewed, Less frequent salary hikes
+*/
+
+select OverTime,count(*) as Count from data_hr group by OverTime;
+/* Output : 
+Yes	416
+No	1053               *** Highest  Most employee dont do overtime
+Null 3015
+*/
+
+alter table data_hr add column work_exp_group varchar(7);                          # Add workex_group column
+update data_hr set work_exp_group = if(workex<=5,'<=5',if(workex>5 and workex<=10,'5-10',if(workex>10 and workex<=20,'10-20','20+'))); # Assign Values
+select work_exp_group,count(*) as Count from data_hr group by work_exp_group;
+/* Output : 
+<=5	315
+5-10	607
+20+	3222               *** Highest   Firm consist of many high experienced personal
+10-20	340
+*/
+
+alter table data_hr add column promotion_group varchar(7);                                                            # Add promotion_group column
+update data_hr set promotion_group = if(YearsSinceLastPromotion<=5,'<=5',if(YearsSinceLastPromotion>10,'10+','5-10')); # Assign Values
+select promotion_group,count(*) as Count from data_hr group by promotion_group;
+/* Output : 
+<5	1254
+5-10	3164                     *** Highest   Post promotion happened 5 years before
+10+	66
+*/
+
+select EmpSatisfaction,count(*) as Count from data_hr group by EmpSatisfaction;
+/* Output : 
+Medium	287
+High	453                      *** Highest  High satisfaction, as high involvement
+Very High	445
+Low	284
+Null 3015
+*/
+
+select TrainingTimesLastYear,count(*) as Count from data_hr group by TrainingTimesLastYear;
+/* Output : 
+Null 3015
+0	54
+1	71
+2	547                         *** Highest      Mostly for 2 Times
+3	490
+4	123
+5	119
+6	65
+*/
+
+select WorkLifeBalance,count(*) as Count from data_hr group by WorkLifeBalance;
+/* Output : 
+Bad	80
+Better	892                       *** Highest   Better worklife
+Good	344
+Best	153
+Null	3015
+*/
+
+select Performance_Rating,count(*) as Count from data_hr group by Performance_Rating;
+/* Output : 
+Excellent	1243                *** Highest  High involvement, thus high performance
+Outstanding	226
+Null	3015
+*/
+
+
+
+
+
+
+
+# *************************************************** Data Analysis (contd) ***********************************************************
+
+# .................................................Causes of attrition
+
+select Department,Attrition,count(*) as count from data_hr 
+where department is not null
+group by Department,Attrition 
+order by department; 
+/* Output :
+Human Resources	No	51
+Human Resources	Yes	12               (23.52)
+Research & Development	No	828
+Research & Development	Yes	133      (16.0 )
+Sales	No	353
+Sales	Yes	92                       (26.06)   # highest attrition percentage - sales
+*/
+
+select JobRole,Attrition,count(*) as count from data_hr 
+where JobRole is not null
+group by JobRole,Attrition 
+order by JobRole; 
+/* Output :
+Healthcare Representative	No	122
+Healthcare Representative	Yes	9
+Human Resources	No	40
+Human Resources	Yes	12                               30%
+Laboratory Technician	No	197
+Laboratory Technician	Yes	62                       31%
+Manager	No	97
+Manager	Yes	5
+Manufacturing Director	No	135
+Manufacturing Director	Yes	10
+Research Director	No	78
+Research Director	Yes	2
+Research Scientist	No	245
+Research Scientist	Yes	47                           19%
+Sales Executive	No	269
+Sales Executive	Yes	57                               21%
+Sales Representative	No	49
+Sales Representative	Yes	33                       67% # highest attrition percentage - sales representative
+*/
+
+select Gender,Attrition,count(*) as count from data_hr 
+where Gender is not null
+group by Gender,Attrition 
+order by Gender; 
+/* Output :
+Female	No	501
+Female	Yes	87                          17%
+Male	No	731
+Male	Yes	150                         20%
+*/
+
+select age_group,Attrition,count(*) as count from data_hr 
+where age_group is not null
+group by age_group,Attrition 
+order by age_group; 
+/* Output :
+<20	No	12
+<20	Yes	16                               133%
+20-40	Null	3015
+20-40	No	807
+20-40	Yes	169                           20%
+40+	No	413
+40+	Yes	52                               12.5%   Attrition decreases with age
+*/
+
+select MaritalStatus,Attrition,count(*) as count from data_hr 
+where MaritalStatus is not null
+group by MaritalStatus,Attrition 
+order by MaritalStatus; 
+/* Output :
+Divorced	No	294
+Divorced	Yes	33          11%
+Married	No	588
+Married	Yes	84              14%
+Single	No	350
+Single	Yes	120            34%
+*/
+
+select education,Attrition,count(*) as count from data_hr 
+where education is not null
+group by education,Attrition 
+order by education; 
+/* Output :
+Bachelor	No	473
+Bachelor	Yes	99                      20
+Below College	No	138
+Below College	Yes	31                  22
+College	No	238
+College	Yes	44                          18
+Doctor	No	43
+Doctor	Yes	5                           11          Higher education have lower attrition rate
+Master	No	340
+Master	Yes	58                          17
+*/
+
+select educationfield,Attrition,count(*) as count from data_hr 
+where educationfield is not null
+group by educationfield,Attrition 
+order by educationfield; 
+/* Output :
+Human Resources	No	20
+Human Resources	Yes	7                         35
+Life Sciences	No	516
+Life Sciences	Yes	89                        17
+Marketing	No	124
+Marketing	Yes	35                            28
+Medical	No	401
+Medical	Yes	63                                15
+Other	No	71
+Other	Yes	11                                15
+Technical Degree	No	100
+Technical Degree	Yes	32                    32   Engineeing and Management field have higher attrition
+*/
+
+select businesstravel,Attrition,count(*) as count from data_hr 
+where businesstravel is not null
+group by businesstravel,Attrition 
+order by businesstravel; 
+/* Output :
+Non-Travel	No	138
+Non-Travel	Yes	12                       8%
+Travel_Frequently	No	208
+Travel_Frequently	Yes	69              33%                Frequent travel causes high attrition
+Travel_Rarely	No	886
+Travel_Rarely	Yes	156                 17%
+*/
+
+select jobinvolvement,Attrition,count(*) as count from data_hr 
+where jobinvolvement is not null
+group by jobinvolvement,Attrition 
+order by jobinvolvement; 
+/* Output :
+High	No	742
+High	Yes	125                                  16%
+Low	No	55
+Low	Yes	28                                       50%        Low job involvement lead to high attrition
+Medium	No	304
+Medium	Yes	71                                   23%
+Very High	No	131
+Very High	Yes	13                                9%
+*/
+
+select joblevel,Attrition,count(*) as count from data_hr 
+where joblevel is not null
+group by joblevel,Attrition 
+order by joblevel; 
+/* Output :
+1	No	399
+1	Yes	143                 35% Highest attrition Job level 0
+2	No	482
+2	Yes	52
+3	No	186
+3	Yes	32
+4	No	101
+4	Yes	5
+5	No	64
+5	Yes	5
+*/
+
+
+select JobSatisfaction,Attrition,count(*) as count from data_hr 
+where JobSatisfaction is not null
+group by JobSatisfaction,Attrition 
+order by JobSatisfaction; 
+/* Output :
+High	No	368
+High	Yes	73                     19%
+Low	No	223
+Low	Yes	66                         29%     Low job satisfaction leads to attrition
+Medium	No	234
+Medium	Yes	46                     19%
+Very High	No	407
+Very High	Yes	52                 12%
+*/
+
+select OverTime,Attrition,count(*) as count from data_hr 
+where OverTime is not null
+group by OverTime,Attrition 
+order by OverTime; 
+/* Output :
+No	No	943
+No	Yes	110                       11%
+Yes	No	289
+Yes	Yes	127                       43%             Overtime leads to attrition
+*/
+
+select Work_exp_group,Attrition,count(*) as count from data_hr 
+where Work_exp_group is not null
+group by Work_exp_group,Attrition 
+order by Work_exp_group; 
+/* Output :
+<=5	No	224
+<=5	Yes	91               40     With increase in expirience, attrition decreases
+10-20	No	301
+10-20	Yes	39           12
+20+	Null	3015
+20+	No	191          
+20+	Yes	16                8
+5-10	No	516
+5-10	Yes	91           17
+*/
+
+select promotion_group,Attrition,count(*) as count from data_hr 
+where YearsSinceLastPromotion is not null
+group by promotion_group,Attrition 
+order by promotion_group; 
+/* Output :
+<5	No	1052
+<5	Yes	202                     19
+10+	No	58
+10+	Yes	8                       13                          
+5-10	No	122
+5-10	Yes	27                  22 Promotion have higher attrition for 5-10 years expirience
+*/
+
+select EmpSatisfaction,Attrition,count(*) as count from data_hr 
+where YearsSinceLastPromotion is not null
+group by EmpSatisfaction,Attrition 
+order by EmpSatisfaction;
+/* Output :
+High	No	391
+High	Yes	62                        15%
+Low	No	212
+Low	Yes	72                            33%           Low employee satisfaction implies high attrition
+Medium	No	244
+Medium	Yes	43                        17%
+Very High	No	385
+Very High	Yes	60                    15%
+*/
+
+
+select TrainingTimesLastYear,Attrition,count(*) as count from data_hr 
+where YearsSinceLastPromotion is not null
+group by TrainingTimesLastYear,Attrition 
+order by TrainingTimesLastYear;
+/* Output :
+0	No	39
+0	Yes	15              38%            No training or very less training leads to high attrition
+1	No	62
+1	Yes	9             
+2	No	449
+2	Yes	98         
+3	No	421
+3	Yes	69
+4	No	97
+4	Yes	26              26%
+5	No	105
+5	Yes	14
+6	No	59
+6	Yes	6
+*/
+
+select WorkLifeBalance,Attrition,count(*) as count from data_hr 
+where YearsSinceLastPromotion is not null
+group by WorkLifeBalance,Attrition 
+order by WorkLifeBalance;
+/* Output :
+Bad	No	55
+Bad	Yes	25                  45%            Bad work-life balance leads to higher attrition
+Best	No	126
+Best	Yes	27
+Better	No	765
+Better	Yes	127
+Good	No	286
+Good	Yes	58
+*/
+
+select Performance_Rating,Attrition,count(*) as count from data_hr 
+where YearsSinceLastPromotion is not null
+group by Performance_Rating,Attrition 
+order by Performance_Rating;
+/* Output :
+Excellent	No	1043
+Excellent	Yes	200                     19
+Outstanding	No	189
+Outstanding	Yes	37                      19   Performance rating seem to not influence attrition rate
+*/
